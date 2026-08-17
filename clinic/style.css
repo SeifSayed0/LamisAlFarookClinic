@@ -86,25 +86,32 @@ html, body {
   opacity: 0.9;
 }
 
+/* --- ضبط أرقام الهواتف والتخصصات في الهيدر --- */
 .contact-numbers {
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 14px;
   align-items: center;
   width: 100%;
+  max-width: 400px;
+  margin: 0 auto;
 }
 
 .phone-item {
   display: flex;
-  flex-wrap: wrap;
+  flex-direction: column; /* التخصص في سطر والرقم تحته دائماً */
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 4px;
   width: 100%;
+  background: rgba(255, 255, 255, 0.08);
+  padding: 8px 12px;
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.15);
 }
 
 .phone-label {
-  font-size: 14px;
+  font-size: 13px;
   color: #e0f2fe;
   font-weight: 600;
   text-align: center;
@@ -112,11 +119,11 @@ html, body {
 
 .phone-link {
   display: inline-block;
-  background-color: rgba(255, 255, 255, 0.15);
+  background-color: rgba(255, 255, 255, 0.2);
   color: #ffffff;
   text-decoration: none;
   font-weight: bold;
-  padding: 6px 14px;
+  padding: 4px 16px;
   border-radius: 20px;
   font-size: 14px;
   direction: ltr;
@@ -125,8 +132,8 @@ html, body {
 }
 
 .phone-link:hover {
-  background-color: rgba(255, 255, 255, 0.3);
-  transform: translateY(-2px);
+  background-color: rgba(255, 255, 255, 0.35);
+  transform: translateY(-1px);
 }
 
 /* --- كارت الحجز والنموذج --- */
