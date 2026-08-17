@@ -1,236 +1,236 @@
 :root {
-    --primary: #0284c7;
-    --primary-hover: #0369a1;
-    --bg: #f8fafc;
-    --card: #ffffff;
-    --text: #1e293b;
-    --border: #e2e8f0;
-    --success: #16a34a;
-    --danger: #dc2626;
-    --warning-bg: #fef3c7;
-    --warning-text: #92400e;
-  }
-  
-  * {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-    font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
-  }
-  
-  body {
-    background-color: var(--bg);
-    color: var(--text);
-    line-height: 1.6;
-  }
-  
-  .container {
-    max-width: 600px;
-    margin: 0 auto;
-    padding: 16px;
-  }
-  
-  .header {
-    background: var(--primary);
-    color: white;
-    text-align: center;
-    padding: 24px 16px;
-    margin-bottom: 24px;
-    box-shadow: 0 2px 4px rgba(0,0,0,0.1);
-  }
-  
-  .header a {
-    color: #e0f2fe;
-    text-decoration: none;
-    font-weight: bold;
-  }
-  
-  .booking-card {
-    background: var(--card);
-    border-radius: 12px;
-    padding: 24px;
-    box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
-  }
-  
-  h2 {
-    margin-bottom: 20px;
-    text-align: center;
-    color: var(--primary);
-  }
-  
-  .form-group {
-    margin-bottom: 16px;
-  }
-  
-  .form-row {
-    display: flex;
-    gap: 12px;
-  }
-  
-  .half {
-    flex: 1;
-  }
-  
-  label {
-    display: block;
-    margin-bottom: 6px;
-    font-weight: 600;
-    font-size: 14px;
-  }
-  
-  input, select {
-    width: 100%;
-    padding: 12px;
-    border: 1px solid var(--border);
-    border-radius: 8px;
-    font-size: 15px;
-    background-color: #fff;
-  }
-  
-  input:focus, select:focus {
-    outline: none;
-    border-color: var(--primary);
-    box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
-  }
-  
-  .alert-box {
-    background: var(--warning-bg);
-    color: var(--warning-text);
-    padding: 10px;
-    border-radius: 6px;
-    font-size: 13px;
-    margin-top: 8px;
-  }
-  
-  button {
-    width: 100%;
-    padding: 14px;
-    background: var(--primary);
-    color: white;
-    border: none;
-    border-radius: 8px;
-    font-size: 16px;
-    font-weight: bold;
-    cursor: pointer;
-    transition: background 0.2s;
-  }
-  
-  button:hover {
-    background: var(--primary-hover);
-  }
-  
-  .loader {
-    text-align: center;
-    margin-top: 16px;
-    font-weight: bold;
-    color: var(--primary);
-  }
-  
-  .response-card {
-    margin-top: 20px;
-    padding: 16px;
-    border-radius: 8px;
-    text-align: center;
-    font-weight: bold;
-  }
-  
-  .response-card.success {
-    background: #dcfce7;
-    color: var(--success);
-  }
-  
-  .response-card.error {
-    background: #fee2e2;
-    color: var(--danger);
-  }
+  --primary: #0284c7;
+  --primary-hover: #0369a1;
+  --bg: #f8fafc;
+  --card: #ffffff;
+  --text: #1e293b;
+  --border: #e2e8f0;
+  --success: #16a34a;
+  --danger: #dc2626;
+  --warning-bg: #fef3c7;
+  --warning-text: #92400e;
+}
 
-  .header-container {
-    position: relative; /* نقطة ارتكاز للوجو */
-    text-align: center; /* تثبيت النصوص والأرقام في المنتصف */
-    min-height: 120px;
-    display: flex;
-    justify-content: center;
-    align-items: center;
-  }
-  
-  .header-logo {
-    position: absolute;
-    right: -160px; /* للتحكم في مكان الصورة يميناً ويساراً */
-    top: 50%;
-    transform: translateY(-50%); /* يضمن توسيط اللوجو رأسياً */
-  }
-  
-  .header-logo img {
-    width: 250px; /* كبّر أو صغّر العرض بالرقم الذي يناسبك */
-    height: auto;
-    display: block;
-  }
-  
-  .header-content {
-    width: 100%;
-  }
-  
-  /* لشاشات الموبايل الصغيرة لو حجم اللوجو كبير جداً */
-  @media (max-width: 480px) {
-    .header-logo img {
-      width: 90px;
-    }
-  }
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  font-family: system-ui, -apple-system, 'Segoe UI', Roboto, sans-serif;
+}
 
-  .contact-title {
-    margin-bottom: 10px;
-    font-size: 15px;
-    opacity: 0.9;
-  }
-  
-  .contact-numbers {
-    display: flex;
-    flex-direction: column;
-    gap: 8px;
-    align-items: center;
-  }
-  
-  .phone-link {
-    display: inline-block;
-    background-color: rgba(255, 255, 255, 0.15);
-    color: #ffffff;
-    text-decoration: none;
-    font-weight: bold;
-    padding: 6px 16px;
-    border-radius: 20px;
-    font-size: 15px;
-    direction: ltr;
-    transition: background-color 0.2s, transform 0.1s;
-  }
-  
-  .phone-link:hover {
-    background-color: rgba(255, 255, 255, 0.3);
-    transform: translateY(-2px);
-  }
+html, body {
+  width: 100%;
+  max-width: 100%;
+  overflow-x: hidden; /* يمنع أي فراغ جانبي نهائياً */
+  background-color: var(--bg);
+  color: var(--text);
+  line-height: 1.6;
+}
 
-  .phone-item {
-    display: flex;
-    flex-direction: row;
-    align-items: center;
-    justify-content: center;
-    gap: 12px; /* المسافة الثابتة بين الجملة والرقم */
-    width: 100%;
-  }
-  
-  .phone-label {
-    font-size: 14px;
-    color: #e0f2fe;
-    font-weight: 600;
-    min-width: 280px; /* العرض الثابت للجملة لتوحيد المسافات */
-    text-align: left; /* أو right حسب تفضيلك لمحاذاة النص نحو الرقم */
-  }
-  
-  .phone-link {
-    min-width: 140px; /* عرض موحد لزر الرقم أيضاً ليصبح كل شيء متناسقاً */
-    text-align: center;
-  }
+.container {
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+  padding: 16px;
+}
 
-  /* تنسيقات النافذة المنبثقة */
+/* --- الهيدر واللوجو --- */
+.header {
+  background: var(--primary);
+  color: white;
+  text-align: center;
+  padding: 24px 16px;
+  margin-bottom: 24px;
+  box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+  width: 100%;
+  overflow: hidden;
+}
+
+.header a {
+  color: #e0f2fe;
+  text-decoration: none;
+  font-weight: bold;
+}
+
+.header-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 600px;
+  margin: 0 auto;
+}
+
+.header-logo {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+.header-logo img {
+  width: 130px;
+  max-width: 100%;
+  height: auto;
+  display: block;
+}
+
+.header-content {
+  width: 100%;
+}
+
+.contact-title {
+  margin-bottom: 10px;
+  font-size: 15px;
+  opacity: 0.9;
+}
+
+.contact-numbers {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  align-items: center;
+  width: 100%;
+}
+
+.phone-item {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  width: 100%;
+}
+
+.phone-label {
+  font-size: 14px;
+  color: #e0f2fe;
+  font-weight: 600;
+  text-align: center;
+}
+
+.phone-link {
+  display: inline-block;
+  background-color: rgba(255, 255, 255, 0.15);
+  color: #ffffff;
+  text-decoration: none;
+  font-weight: bold;
+  padding: 6px 14px;
+  border-radius: 20px;
+  font-size: 14px;
+  direction: ltr;
+  text-align: center;
+  transition: background-color 0.2s, transform 0.1s;
+}
+
+.phone-link:hover {
+  background-color: rgba(255, 255, 255, 0.3);
+  transform: translateY(-2px);
+}
+
+/* --- كارت الحجز والنموذج --- */
+.booking-card {
+  background: var(--card);
+  border-radius: 12px;
+  padding: 24px;
+  box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+  width: 100%;
+}
+
+h2 {
+  margin-bottom: 20px;
+  text-align: center;
+  color: var(--primary);
+}
+
+.form-group {
+  margin-bottom: 16px;
+}
+
+.form-row {
+  display: flex;
+  gap: 12px;
+}
+
+.half {
+  flex: 1;
+}
+
+label {
+  display: block;
+  margin-bottom: 6px;
+  font-weight: 600;
+  font-size: 14px;
+}
+
+input, select {
+  width: 100%;
+  padding: 12px;
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  font-size: 15px;
+  background-color: #fff;
+}
+
+input:focus, select:focus {
+  outline: none;
+  border-color: var(--primary);
+  box-shadow: 0 0 0 3px rgba(2, 132, 199, 0.15);
+}
+
+.alert-box {
+  background: var(--warning-bg);
+  color: var(--warning-text);
+  padding: 10px;
+  border-radius: 6px;
+  font-size: 13px;
+  margin-top: 8px;
+}
+
+button {
+  width: 100%;
+  padding: 14px;
+  background: var(--primary);
+  color: white;
+  border: none;
+  border-radius: 8px;
+  font-size: 16px;
+  font-weight: bold;
+  cursor: pointer;
+  transition: background 0.2s;
+}
+
+button:hover {
+  background: var(--primary-hover);
+}
+
+.loader {
+  text-align: center;
+  margin-top: 16px;
+  font-weight: bold;
+  color: var(--primary);
+}
+
+.response-card {
+  margin-top: 20px;
+  padding: 16px;
+  border-radius: 8px;
+  text-align: center;
+  font-weight: bold;
+}
+
+.response-card.success {
+  background: #dcfce7;
+  color: var(--success);
+}
+
+.response-card.error {
+  background: #fee2e2;
+  color: var(--danger);
+}
+
+/* --- النافذة المنبثقة (Popup Modal) --- */
 .modal-overlay {
   position: fixed;
   top: 0;
@@ -244,7 +244,6 @@
   align-items: center;
   z-index: 9999;
   padding: 16px;
-  box-sizing: border-box;
 }
 
 .modal-card {
@@ -352,41 +351,109 @@
 .btn-close-modal:hover {
   background-color: #1d4ed8;
 }
-/* زر مواعيد الأطباء الجانبي المصغر */
+
+/* نافذة المواعيد */
+.schedule-card {
+  max-width: 480px;
+  max-height: 85vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.schedule-body {
+  overflow-y: auto;
+  max-height: 60vh;
+  padding: 16px;
+}
+
+.doctor-item {
+  background: #f8fafc;
+  border: 1px solid #e2e8f0;
+  border-radius: 12px;
+  padding: 12px;
+  margin-bottom: 10px;
+  text-align: right;
+}
+
+.doctor-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+
+.doctor-name {
+  font-size: 15px;
+  font-weight: bold;
+  color: #0f172a;
+}
+
+.doctor-spec {
+  background: #e0f2fe;
+  color: #0369a1;
+  font-size: 12px;
+  padding: 2px 8px;
+  border-radius: 6px;
+  font-weight: 600;
+}
+
+.doctor-time {
+  font-size: 13px;
+  color: #475569;
+}
+
+/* --- زر مواعيد الأطباء الجانبي --- */
 .floating-schedule-btn {
   position: fixed !important;
   right: 0 !important;
-  left: auto !important; /* يمنع التمدد لليسار */
+  left: auto !important;
   top: 45% !important;
   transform: translateY(-50%) !important;
-  
-  /* تقييد العرض ليناسب النص فقط */
   width: auto !important;
   max-width: max-content !important;
   display: inline-flex !important;
-  
   background-color: #0284c7;
   color: #ffffff;
   border: none;
   border-radius: 12px 0 0 12px;
-  padding: 8px 14px;
+  padding: 8px 12px;
   gap: 6px;
-  
+  font-size: 13px;
   font-weight: bold;
   box-shadow: -2px 4px 12px rgba(2, 132, 199, 0.35);
   cursor: pointer;
   z-index: 1000;
-  white-space: nowrap; /* يمنع نزول النص في سطرين */
-}
-.floating-schedule-btn:hover {
-  background-color: #0369a1;
-  padding-right: 18px; /* حركة تفاعلية تبرز الزر عند الوقوف عليه */
+  white-space: nowrap;
+  transition: all 0.2s ease;
 }
 
-/* تعديل مقاس الزر لشاشات الموبايل ليظل مريحاً ولا يغطي المحتوى */
-@media (max-width: 480px) {
+.floating-schedule-btn:hover {
+  background-color: #0369a1;
+  padding-right: 16px;
+}
+
+/* --- تجاوب الشاشات الصغيرة (Mobile Responsive) --- */
+@media (max-width: 520px) {
+  .header {
+    padding: 16px 12px;
+    margin-bottom: 16px;
+  }
+
+  .header-logo img {
+    width: 100px;
+  }
+
+  .booking-card {
+    padding: 18px 14px;
+  }
+
+  .form-row {
+    flex-direction: column;
+    gap: 0;
+  }
+
   .floating-schedule-btn {
-    top: 35%;
+    top: 38% !important;
     font-size: 12px;
     padding: 6px 10px;
   }
