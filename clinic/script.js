@@ -1,7 +1,7 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_ohcEeCWrLng7OCllyPK0h8rFA5pzfHoudgi6yeV_3ml3gWWqAwHCslynql4SwMGE6w/exec";
-// خريطة لترجمة أسماء التخصصات للعربية داخل كارت الحجز
 const CLINIC_LABELS = {
   dental: "أسنان",
+  gynecology: "نسا وتوليد",
   internal: "باطنة",
   orthopedic: "عظام",
   pediatric: "أطفال",
@@ -16,84 +16,163 @@ const CLINIC_LABELS = {
   nutrition: "تغذية علاجية"
 };
 
-// عناصر واجهة المستخدم الرئيسية
-const clinicSelect = document.getElementById("clinic_key");
-const specialNotesGroup = document.getElementById("specialNotesGroup");
+const SERVICE_LABELS = {
+  checkup: "كشف",
+  consultation: "استشارة",
+  sessions: "جلسات",
+  followup: "متابعة"
+};
+
+// عناصر الفورم
 const bookingForm = document.getElementById("bookingForm");
+const bookingDateInput = document.getElementById("booking_date");
+const clinicSelect = document.getElementById("clinic_key");
+const serviceTypeGroup = document.getElementById("serviceTypeGroup");
+const serviceTypeSelect = document.getElementById("service_type");
+const dentalRoomGroup = document.getElementById("dentalRoomGroup");
+const dentalRoomSelect = document.getElementById("dental_room");
+const specialNotesGroup = document.getElementById("specialNotesGroup");
 const submitBtn = document.getElementById("submitBtn");
 const loader = document.getElementById("loader");
 const responseMessage = document.getElementById("responseMessage");
 
-// عناصر النافذة المنبثقة (Popup Modal)
+// عناصر كارت المودال
 const bookingModal = document.getElementById("bookingModal");
 const closeModalBtn = document.getElementById("closeModalBtn");
 const modalName = document.getElementById("modalName");
+const modalDate = document.getElementById("modalDate");
+const modalClinic = document.getElementById("modalClinic");
+const modalService = document.getElementById("modalService");
+const modalRoomRow = document.getElementById("modalRoomRow");
+const modalRoom = document.getElementById("modalRoom");
 const modalAge = document.getElementById("modalAge");
 const modalPhone = document.getElementById("modalPhone");
-const modalClinic = document.getElementById("modalClinic");
 const modalMainMessage = document.getElementById("modalMainMessage");
 const modalQueueRow = document.getElementById("modalQueueRow");
 const modalQueueNumber = document.getElementById("modalQueueNumber");
 
-// إظهار حقل الملاحظات والمواعيد للتخصصات الخاصة
+// عناصر جدول المواعيد
+const openScheduleBtn = document.getElementById("openScheduleBtn");
+const scheduleModal = document.getElementById("scheduleModal");
+const closeScheduleBtn = document.getElementById("closeScheduleBtn");
+const scheduleLoader = document.getElementById("scheduleLoader");
+const doctorsList = document.getElementById("doctorsList");
+
+// 1. ضبط الحد الأدنى للتاريخ في التقويم ليكون بدءاً من اليوم
+const today = new Date().toISOString().split("T")[0];
+bookingDateInput.min = today;
+bookingDateInput.value = today;
+
+// 2. تحديث قائمة الخدمات وغرف الأسنان بناءً على التخصص
 clinicSelect.addEventListener("change", (e) => {
-  const selectedKey = e.target.value;
-  if (selectedKey === "psychiatry" || selectedKey === "nutrition") {
+  const selectedClinic = e.target.value;
+  serviceTypeSelect.innerHTML = "";
+  serviceTypeGroup.style.display = "block";
+
+  // إظهار/إخفاء غرفة الأسنان
+  if (selectedClinic === "dental") {
+    dentalRoomGroup.style.display = "block";
+  } else {
+    dentalRoomGroup.style.display = "none";
+  }
+
+  // توزيع الخدمات المتاحة حسب التخصص
+  let services = [];
+
+  if (selectedClinic === "psychiatry") {
+    services = [
+      { value: "checkup", label: "كشف" },
+      { value: "consultation", label: "استشارة" },
+      { value: "followup", label: "متابعة" }
+    ];
+  } else if (selectedClinic === "physiotherapy" || selectedClinic === "speech_therapy") {
+    services = [
+      { value: "checkup", label: "كشف" },
+      { value: "sessions", label: "جلسات" }
+    ];
+  } else if (selectedClinic === "nutrition") {
+    services = [
+      { value: "checkup", label: "كشف" },
+      { value: "sessions", label: "جلسات" },
+      { value: "followup", label: "متابعة" }
+    ];
+  } else if (selectedClinic === "dental") {
+    services = [
+      { value: "checkup", label: "كشف" },
+      { value: "followup", label: "متابعة" }
+    ];
+  } else {
+    // باقي التخصصات العامة + النسا
+    services = [
+      { value: "checkup", label: "كشف" },
+      { value: "consultation", label: "استشارة" }
+    ];
+  }
+
+  services.forEach((srv) => {
+    const opt = document.createElement("option");
+    opt.value = srv.value;
+    opt.textContent = srv.label;
+    serviceTypeSelect.appendChild(opt);
+  });
+
+  checkSpecialPolicies();
+});
+
+serviceTypeSelect.addEventListener("change", checkSpecialPolicies);
+
+function checkSpecialPolicies() {
+  const clinic = clinicSelect.value;
+
+  // يظهر التنبيه بمجرد اختيار العيادة النفسية
+  if (clinic === "psychiatry") {
+    specialAlertText.textContent = "⚠️ تنبيه: العيادات النفسية تتطلب الحجز والدفع المسبق لتأكيد الموعد.";
     specialNotesGroup.style.display = "block";
   } else {
     specialNotesGroup.style.display = "none";
   }
-});
+}
 
-// إغلاق النافذة المنبثقة عند الضغط على زر الإغلاق
-closeModalBtn.addEventListener("click", () => {
-  bookingModal.style.display = "none";
-});
-
-// إغلاق النافذة المنبثقة عند الضغط على الخلفية المعتمة خارج الكارت
-bookingModal.addEventListener("click", (e) => {
-  if (e.target === bookingModal) {
-    bookingModal.style.display = "none";
-  }
-});
-
-// معالجة نموذج الحجز
+// 3. إرسال الحجز والتحقق
 bookingForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
   const nameInput = document.getElementById("name").value.trim();
   const ageInput = document.getElementById("age").value.trim();
   const phoneInput = document.getElementById("phone").value.trim();
+  const dateInput = bookingDateInput.value;
   const clinicKeyInput = clinicSelect.value;
+  const serviceTypeInput = serviceTypeSelect.value;
+  const dentalRoomInput = (clinicKeyInput === "dental") ? dentalRoomSelect.value : "";
   const notesInput = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
 
-  // 1. التحقق من صحة الاسم
   if (nameInput.length < 3) {
-    showError("يرجى إدخال الاسم بالكامل بشكل صحيح.");
+    showError("يرجى إدخال اسم المريض بالكامل.");
     return;
   }
 
-  // 2. التحقق من صحة السن (بين سنة و 110 سنة)
   const ageNum = Number(ageInput);
   if (isNaN(ageNum) || ageNum < 1 || ageNum > 110) {
-    showError("يرجى إدخال سن صحيح (بين 1 و 110).");
+    showError("يرجى إدخال سن صحيح.");
     return;
   }
 
-  // 3. التحقق من صحة رقم الهاتف (11 رقم مصري يبدأ بـ 01)
   const phoneRegex = /^01[0125][0-9]{8}$/;
   if (!phoneRegex.test(phoneInput)) {
-    showError("يرجى إدخال رقم هاتف مصري صحيح مكون من 11 رقماً (مثال: 01012345678).");
+    showError("يرجى إدخال رقم هاتف مصري صحيح (11 رقماً).");
     return;
   }
 
-  // 4. التحقق من اختيار التخصص
-  if (!clinicKeyInput) {
-    showError("يرجى اختيار التخصص المطلوب.");
+  if (!dateInput) {
+    showError("يرجى تحديد تاريخ الموعد.");
     return;
   }
 
-  // قفل الزر وإظهار التحميل لمنع الضغط المتكرر
+  if (!clinicKeyInput || !serviceTypeInput) {
+    showError("يرجى اختيار التخصص ونوع الخدمة.");
+    return;
+  }
+
   submitBtn.disabled = true;
   loader.style.display = "block";
   responseMessage.style.display = "none";
@@ -102,7 +181,10 @@ bookingForm.addEventListener("submit", async (e) => {
     patient_name: nameInput,
     age: ageNum,
     phone: phoneInput,
+    booking_date: dateInput,
     clinic_key: clinicKeyInput,
+    service_type: serviceTypeInput,
+    dental_room: dentalRoomInput,
     notes: notesInput
   };
 
@@ -113,18 +195,24 @@ bookingForm.addEventListener("submit", async (e) => {
     });
 
     const result = await response.json();
-
     loader.style.display = "none";
 
     if (result.success) {
-      // تعبئة بيانات الكارت المنبثق
       modalName.textContent = payload.patient_name;
+      modalDate.textContent = payload.booking_date;
       modalAge.textContent = `${payload.age} سنة`;
       modalPhone.textContent = payload.phone;
       modalClinic.textContent = CLINIC_LABELS[payload.clinic_key] || payload.clinic_key;
+      modalService.textContent = SERVICE_LABELS[payload.service_type] || payload.service_type;
       modalMainMessage.textContent = result.message;
 
-      // إظهار سطر رقم الدور إذا كان الحجز أسنان
+      if (payload.clinic_key === "dental") {
+        modalRoomRow.style.display = "flex";
+        modalRoom.textContent = payload.dental_room === "room_1" ? "غرفة (1)" : "غرفة (2)";
+      } else {
+        modalRoomRow.style.display = "none";
+      }
+
       if (result.queue_number && result.queue_number !== "-") {
         modalQueueRow.style.display = "flex";
         modalQueueNumber.textContent = result.queue_number;
@@ -132,38 +220,34 @@ bookingForm.addEventListener("submit", async (e) => {
         modalQueueRow.style.display = "none";
       }
 
-      // إظهار النافذة المنبثقة
       bookingModal.style.display = "flex";
-
-      // إعادة ضبط النموذج
       bookingForm.reset();
+      bookingDateInput.value = today;
+      serviceTypeGroup.style.display = "none";
+      dentalRoomGroup.style.display = "none";
       specialNotesGroup.style.display = "none";
     } else {
       showError(result.message || "تعذر إتمام الحجز، يرجى المحاولة لاحقاً.");
     }
   } catch (error) {
     loader.style.display = "none";
-    showError("حدث خطأ في الاتصال بالشبكة، يرجى المحاولة مرة أخرى.");
+    showError("حدث خطأ في الاتصال بالشبكة، يرجى المحاولة لاحقاً.");
   } finally {
     submitBtn.disabled = false;
   }
 });
 
-// دالة عرض رسائل الخطأ
 function showError(msg) {
   responseMessage.style.display = "block";
   responseMessage.className = "response-card error";
   responseMessage.innerHTML = `❌ ${msg}`;
 }
 
-// عناصر نافذة جدول الأطباء
-const openScheduleBtn = document.getElementById("openScheduleBtn");
-const scheduleModal = document.getElementById("scheduleModal");
-const closeScheduleBtn = document.getElementById("closeScheduleBtn");
-const scheduleLoader = document.getElementById("scheduleLoader");
-const doctorsList = document.getElementById("doctorsList");
+// التحكم بالنوافذ المنبثقة (Modals)
+closeModalBtn.addEventListener("click", () => { bookingModal.style.display = "none"; });
+bookingModal.addEventListener("click", (e) => { if (e.target === bookingModal) bookingModal.style.display = "none"; });
 
-// فتح النافذة وجلب البيانات من الشيت
+// جلب جدول مواعيد الأطباء
 openScheduleBtn.addEventListener("click", async () => {
   scheduleModal.style.display = "flex";
   scheduleLoader.style.display = "block";
@@ -198,17 +282,9 @@ openScheduleBtn.addEventListener("click", async () => {
   } catch (err) {
     scheduleLoader.style.display = "none";
     doctorsList.style.display = "block";
-    doctorsList.innerHTML = `<p style="text-align:center; color:#ef4444;">تعذر تحميل المواعيد، يرجى المحاولة لاحقاً.</p>`;
+    doctorsList.innerHTML = `<p style="text-align:center; color:#ef4444;">تعذر تحميل المواعيد.</p>`;
   }
 });
 
-// إغلاق نافذة المواعيد
-closeScheduleBtn.addEventListener("click", () => {
-  scheduleModal.style.display = "none";
-});
-
-scheduleModal.addEventListener("click", (e) => {
-  if (e.target === scheduleModal) {
-    scheduleModal.style.display = "none";
-  }
-});
+closeScheduleBtn.addEventListener("click", () => { scheduleModal.style.display = "none"; });
+scheduleModal.addEventListener("click", (e) => { if (e.target === scheduleModal) scheduleModal.style.display = "none"; });
