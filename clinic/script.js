@@ -66,10 +66,11 @@ const doctorsList = document.getElementById("doctorsList");
 // مصفوفة لتخزين بيانات الأطباء من شيت Doctors
 let allDoctorsData = [];
 
-// 1. ضبط الحد الأدنى للتقويم من تاريخ اليوم
-const today = new Date().toISOString().split("T")[0];
-bookingDateInput.min = today;
-bookingDateInput.value = today;
+// 1. ضبط الحد الأدنى للتقويم من تاريخ اليوم بالتوقيت المحلي
+const nowLocal = new Date();
+const localDateString = nowLocal.getFullYear() + '-' + String(nowLocal.getMonth() + 1).padStart(2, '0') + '-' + String(nowLocal.getDate()).padStart(2, '0');
+bookingDateInput.min = localDateString;
+bookingDateInput.value = localDateString;
 
 // 2. جلب بيانات الأطباء في الخلفية فور فتح الصفحة
 async function fetchDoctorsData() {
@@ -88,24 +89,30 @@ async function fetchDoctorsData() {
 }
 fetchDoctorsData();
 
-// دالة لتنظيف وتوحيد النصوص العربية
+// دالة تنظيف وتوحيد النصوص العربية والإنجليزية
 function normalizeArabic(text) {
   if (!text) return "";
   return text
     .toString()
     .trim()
+    .toLowerCase()
     .replace(/[أإآ]/g, "ا")
     .replace(/ة/g, "ه")
-    .replace(/\s+/g, " ")
-    .toLowerCase();
+    .replace(/[،,]/g, " ")
+    .replace(/\s+/g, " ");
 }
 
-// دالة لمعرفة اسم اليوم العربي بدقة
+// دالة حساب اليوم العربي بدون أي مشاكل في التوقيت والـ Timezone
 function getArabicDayName(dateString) {
+  if (!dateString) return "";
   const parts = dateString.split("-");
-  const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+  const year = parseInt(parts[0], 10);
+  const month = parseInt(parts[1], 10) - 1;
+  const day = parseInt(parts[2], 10);
+  
+  const localDate = new Date(year, month, day, 12, 0, 0);
   const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
-  return days[dateObj.getDay()];
+  return days[localDate.getDay()];
 }
 
 // 3. فلترة وتحديث قائمة الأطباء المتاحين بذكاء
@@ -118,7 +125,7 @@ function updateAvailableDoctors() {
     return;
   }
 
-  if (allDoctorsData.length === 0) {
+  if (!allDoctorsData || allDoctorsData.length === 0) {
     doctorGroup.style.display = "block";
     doctorStatusNote.style.color = "#0369a1";
     doctorStatusNote.textContent = "⏳ جاري فحص جدول الأطباء...";
@@ -127,20 +134,22 @@ function updateAvailableDoctors() {
 
   const dayName = getArabicDayName(selectedDate);
   const normalizedDay = normalizeArabic(dayName);
-  const selectedClinicArabic = normalizeArabic(CLINIC_LABELS[selectedClinic] || selectedClinic);
-  const selectedClinicKey = normalizeArabic(selectedClinic);
+  const clinicArabic = normalizeArabic(CLINIC_LABELS[selectedClinic] || "");
+  const clinicKey = normalizeArabic(selectedClinic);
 
+  // فلترة الأطباء
   const available = allDoctorsData.filter((doc) => {
-    const docClinicNormalized = normalizeArabic(doc.clinic_key);
+    const docClinic = normalizeArabic(doc.clinic_key);
+    const docDays = normalizeArabic(doc.working_days);
+
     const matchClinic = (
-      docClinicNormalized === selectedClinicKey ||
-      docClinicNormalized === selectedClinicArabic ||
-      docClinicNormalized.includes(selectedClinicKey) ||
-      selectedClinicArabic.includes(docClinicNormalized)
+      docClinic === clinicKey ||
+      docClinic === clinicArabic ||
+      docClinic.includes(clinicKey) ||
+      clinicArabic.includes(docClinic)
     );
 
-    const docDaysNormalized = normalizeArabic(doc.working_days);
-    const matchDay = docDaysNormalized.includes(normalizedDay);
+    const matchDay = docDays.includes(normalizedDay);
 
     return matchClinic && matchDay;
   });
@@ -339,7 +348,7 @@ bookingForm.addEventListener("submit", async (e) => {
 
       bookingModal.style.display = "flex";
       bookingForm.reset();
-      bookingDateInput.value = today;
+      bookingDateInput.value = localDateString;
       doctorGroup.style.display = "none";
       serviceTypeGroup.style.display = "none";
       specialNotesGroup.style.display = "none";
