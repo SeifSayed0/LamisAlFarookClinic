@@ -45,6 +45,7 @@
       </div>
     </div>
   </header>
+
   <!-- زر مواعيد الأطباء العائم -->
   <button type="button" id="openScheduleBtn" class="floating-schedule-btn">
     👨‍⚕️ مواعيد الأطباء
@@ -76,6 +77,20 @@
           </select>
         </div>
 
+        <div class="form-group">
+          <label for="booking_date">تاريخ الموعد المطلوب</label>
+          <input type="date" id="booking_date" required>
+        </div>
+
+        <!-- حقل اختيار الطبيب المعالج المتاح بناءً على التخصص واليوم -->
+        <div class="form-group" id="doctorGroup" style="display: none;">
+          <label for="doctor_name">الطبيب المعالج المتاح</label>
+          <select id="doctor_name" required>
+            <!-- يتم تعبئته ديناميكياً من JS -->
+          </select>
+          <small id="doctorStatusNote" style="color: #0369a1; font-size: 13px; margin-top: 5px; display: block; font-weight: 500;"></small>
+        </div>
+
         <!-- حقل نوع الخدمة الديناميكي -->
         <div class="form-group" id="serviceTypeGroup" style="display: none;">
           <label for="service_type">نوع الخدمة المطلوبة</label>
@@ -95,7 +110,7 @@
 
         <div class="form-group" id="specialNotesGroup" style="display: none;">
           <div class="alert-box" id="specialAlertText">
-            📌 يرجى إتمام التحويل المسبق لتأكيد حجز الجلسة.
+            ⚠️ تنبيه: العيادات النفسية تتطلب الحجز والدفع المسبق لتأكيد الموعد.
           </div>
           <label for="notes" style="margin-top: 8px;">ملاحظات إضافية (اختياري)</label>
           <input type="text" id="notes" placeholder="اكتب أي ملاحظة للطبيب">
@@ -116,12 +131,6 @@
             <input type="tel" id="phone" placeholder="01012345678" required>
           </div>
         </div>
-
-        <div class="form-group">
-          <label for="booking_date">تاريخ الموعد المطلوب</label>
-          <input type="date" id="booking_date" required>
-        </div>
-
       
         <button type="submit" id="submitBtn">تأكيد الحجز</button>
         <div id="loader" class="loader" style="display: none;">جاري تسجيل الحجز...</div>
@@ -152,6 +161,10 @@
         <div class="ticket-row">
           <span>التخصص:</span>
           <strong id="modalClinic">-</strong>
+        </div>
+        <div class="ticket-row" id="modalDoctorRow" style="display: none;">
+          <span>الطبيب المعالج:</span>
+          <strong id="modalDoctor">-</strong>
         </div>
         <div class="ticket-row">
           <span>نوع الخدمة:</span>
