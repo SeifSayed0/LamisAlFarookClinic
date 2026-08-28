@@ -1,4 +1,5 @@
 const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_ohcEeCWrLng7OCllyPK0h8rFA5pzfHoudgi6yeV_3ml3gWWqAwHCslynql4SwMGE6w/exec";
+
 const CLINIC_LABELS = {
   dental: "أسنان",
   gynecology: "نسا وتوليد",
@@ -8,7 +9,7 @@ const CLINIC_LABELS = {
   ophthalmology: "رمد",
   physiotherapy: "علاج طبيعي",
   neurology: "مخ وأعصاب",
-  vascular: "أوعية دموية",
+  vascular: "جراحة وأوعية دموية",
   dermatology: "جلدية",
   ent: "أنف وأذن",
   speech_therapy: "تخاطب",
@@ -23,15 +24,19 @@ const SERVICE_LABELS = {
   followup: "متابعة"
 };
 
-// عناصر الفورم
+// عناصر النموذج
 const bookingForm = document.getElementById("bookingForm");
 const bookingDateInput = document.getElementById("booking_date");
 const clinicSelect = document.getElementById("clinic_key");
+const doctorGroup = document.getElementById("doctorGroup");
+const doctorSelect = document.getElementById("doctor_name");
+const doctorStatusNote = document.getElementById("doctorStatusNote");
 const serviceTypeGroup = document.getElementById("serviceTypeGroup");
 const serviceTypeSelect = document.getElementById("service_type");
 const dentalRoomGroup = document.getElementById("dentalRoomGroup");
 const dentalRoomSelect = document.getElementById("dental_room");
 const specialNotesGroup = document.getElementById("specialNotesGroup");
+const specialAlertText = document.getElementById("specialAlertText");
 const submitBtn = document.getElementById("submitBtn");
 const loader = document.getElementById("loader");
 const responseMessage = document.getElementById("responseMessage");
@@ -42,6 +47,8 @@ const closeModalBtn = document.getElementById("closeModalBtn");
 const modalName = document.getElementById("modalName");
 const modalDate = document.getElementById("modalDate");
 const modalClinic = document.getElementById("modalClinic");
+const modalDoctorRow = document.getElementById("modalDoctorRow");
+const modalDoctor = document.getElementById("modalDoctor");
 const modalService = document.getElementById("modalService");
 const modalRoomRow = document.getElementById("modalRoomRow");
 const modalRoom = document.getElementById("modalRoom");
@@ -58,12 +65,83 @@ const closeScheduleBtn = document.getElementById("closeScheduleBtn");
 const scheduleLoader = document.getElementById("scheduleLoader");
 const doctorsList = document.getElementById("doctorsList");
 
-// 1. ضبط الحد الأدنى للتاريخ في التقويم ليكون بدءاً من اليوم
+// مصفوفة لتخزين بيانات الأطباء من شيت Doctors
+let allDoctorsData = [];
+
+// 1. ضبط الحد الأدنى للتقويم من تاريخ اليوم
 const today = new Date().toISOString().split("T")[0];
 bookingDateInput.min = today;
 bookingDateInput.value = today;
 
-// 2. تحديث قائمة الخدمات وغرف الأسنان بناءً على التخصص
+// 2. جلب بيانات الأطباء في الخلفية فور فتح الصفحة
+async function fetchDoctorsData() {
+  try {
+    const res = await fetch(`${SCRIPT_URL}?action=getDoctors`);
+    const data = await res.json();
+    if (data.success && data.doctors) {
+      allDoctorsData = data.doctors;
+      if (clinicSelect.value) {
+        updateAvailableDoctors();
+      }
+    }
+  } catch (err) {
+    console.error("فشل جلب بيانات الأطباء", err);
+  }
+}
+fetchDoctorsData();
+
+// دالة لمعرفة اسم اليوم العربي من تاريخ التقويم بدقة
+function getArabicDayName(dateString) {
+  const parts = dateString.split("-");
+  const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
+  const days = ["الأحد", "الإثنين", "الثلاثاء", "الأربعاء", "الخميس", "الجمعة", "السبت"];
+  return days[dateObj.getDay()];
+}
+
+// 3. فلترة وتحديث قائمة الأطباء المتاحين
+function updateAvailableDoctors() {
+  const selectedDate = bookingDateInput.value;
+  const selectedClinic = clinicSelect.value;
+
+  if (!selectedDate || !selectedClinic) {
+    doctorGroup.style.display = "none";
+    return;
+  }
+
+  const dayName = getArabicDayName(selectedDate);
+
+  // فلترة الأطباء حسب التخصص ويوم العمل
+  const available = allDoctorsData.filter((doc) => {
+    const matchClinic = (doc.clinic_key === selectedClinic || CLINIC_LABELS[doc.clinic_key] === CLINIC_LABELS[selectedClinic]);
+    const matchDay = doc.working_days && doc.working_days.includes(dayName);
+    return matchClinic && matchDay;
+  });
+
+  doctorSelect.innerHTML = "";
+
+  if (available.length > 0) {
+    doctorGroup.style.display = "block";
+    doctorStatusNote.style.color = "#0369a1";
+    doctorStatusNote.textContent = `الأطباء المتواجدون يوم (${dayName}):`;
+
+    available.forEach((doc) => {
+      const opt = document.createElement("option");
+      opt.value = doc.doctor_name;
+      opt.textContent = `${doc.doctor_name} ${doc.schedule_time ? `(${doc.schedule_time})` : ""}`;
+      doctorSelect.appendChild(opt);
+    });
+  } else {
+    doctorGroup.style.display = "block";
+    const opt = document.createElement("option");
+    opt.value = "";
+    opt.textContent = `لا يوجد طبيب متواجد في هذا التخصص يوم (${dayName})`;
+    doctorSelect.appendChild(opt);
+    doctorStatusNote.style.color = "#dc2626";
+    doctorStatusNote.textContent = "يرجى اختيار يوم آخر يتوافق مع جدول مواعيد العيادة.";
+  }
+}
+
+// 4. تحديث قائمة الخدمات وغرف الأسنان بناءً على التخصص
 clinicSelect.addEventListener("change", (e) => {
   const selectedClinic = e.target.value;
   serviceTypeSelect.innerHTML = "";
@@ -76,7 +154,7 @@ clinicSelect.addEventListener("change", (e) => {
     dentalRoomGroup.style.display = "none";
   }
 
-  // توزيع الخدمات المتاحة حسب التخصص
+  // توزيع الخدمات المتاحة
   let services = [];
 
   if (selectedClinic === "psychiatry") {
@@ -117,14 +195,14 @@ clinicSelect.addEventListener("change", (e) => {
   });
 
   checkSpecialPolicies();
+  updateAvailableDoctors();
 });
 
+bookingDateInput.addEventListener("change", updateAvailableDoctors);
 serviceTypeSelect.addEventListener("change", checkSpecialPolicies);
 
 function checkSpecialPolicies() {
   const clinic = clinicSelect.value;
-
-  // يظهر التنبيه بمجرد اختيار العيادة النفسية
   if (clinic === "psychiatry") {
     specialAlertText.textContent = "⚠️ تنبيه: العيادات النفسية تتطلب الحجز والدفع المسبق لتأكيد الموعد.";
     specialNotesGroup.style.display = "block";
@@ -133,7 +211,7 @@ function checkSpecialPolicies() {
   }
 }
 
-// 3. إرسال الحجز والتحقق
+// 5. إرسال الحجز والتحقق
 bookingForm.addEventListener("submit", async (e) => {
   e.preventDefault();
 
@@ -142,6 +220,7 @@ bookingForm.addEventListener("submit", async (e) => {
   const phoneInput = document.getElementById("phone").value.trim();
   const dateInput = bookingDateInput.value;
   const clinicKeyInput = clinicSelect.value;
+  const doctorNameInput = doctorSelect.value;
   const serviceTypeInput = serviceTypeSelect.value;
   const dentalRoomInput = (clinicKeyInput === "dental") ? dentalRoomSelect.value : "";
   const notesInput = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
@@ -173,6 +252,11 @@ bookingForm.addEventListener("submit", async (e) => {
     return;
   }
 
+  if (!doctorNameInput) {
+    showError("لا يوجد طبيب متاح في اليوم والتخصص المحددين، يرجى تغيير التاريخ أو التخصص.");
+    return;
+  }
+
   submitBtn.disabled = true;
   loader.style.display = "block";
   responseMessage.style.display = "none";
@@ -183,6 +267,7 @@ bookingForm.addEventListener("submit", async (e) => {
     phone: phoneInput,
     booking_date: dateInput,
     clinic_key: clinicKeyInput,
+    doctor_name: doctorNameInput,
     service_type: serviceTypeInput,
     dental_room: dentalRoomInput,
     notes: notesInput
@@ -206,6 +291,13 @@ bookingForm.addEventListener("submit", async (e) => {
       modalService.textContent = SERVICE_LABELS[payload.service_type] || payload.service_type;
       modalMainMessage.textContent = result.message;
 
+      if (payload.doctor_name) {
+        modalDoctorRow.style.display = "flex";
+        modalDoctor.textContent = payload.doctor_name;
+      } else {
+        modalDoctorRow.style.display = "none";
+      }
+
       if (payload.clinic_key === "dental") {
         modalRoomRow.style.display = "flex";
         modalRoom.textContent = payload.dental_room === "room_1" ? "غرفة (1)" : "غرفة (2)";
@@ -223,6 +315,7 @@ bookingForm.addEventListener("submit", async (e) => {
       bookingModal.style.display = "flex";
       bookingForm.reset();
       bookingDateInput.value = today;
+      doctorGroup.style.display = "none";
       serviceTypeGroup.style.display = "none";
       dentalRoomGroup.style.display = "none";
       specialNotesGroup.style.display = "none";
@@ -243,11 +336,11 @@ function showError(msg) {
   responseMessage.innerHTML = `❌ ${msg}`;
 }
 
-// التحكم بالنوافذ المنبثقة (Modals)
+// التحكم بالنوافذ المنبثقة
 closeModalBtn.addEventListener("click", () => { bookingModal.style.display = "none"; });
 bookingModal.addEventListener("click", (e) => { if (e.target === bookingModal) bookingModal.style.display = "none"; });
 
-// جلب جدول مواعيد الأطباء
+// جدول مواعيد الأطباء
 openScheduleBtn.addEventListener("click", async () => {
   scheduleModal.style.display = "flex";
   scheduleLoader.style.display = "block";
@@ -267,11 +360,13 @@ openScheduleBtn.addEventListener("click", async () => {
         docCard.className = "doctor-item";
         docCard.innerHTML = `
           <div class="doctor-header">
-            <span class="doctor-name">👨‍⚕️ ${doc.name}</span>
-            <span class="doctor-spec">${doc.specialty}</span>
+            <span class="doctor-name">👨‍⚕️ ${doc.doctor_name}</span>
+            <span class="doctor-spec">${CLINIC_LABELS[doc.clinic_key] || doc.clinic_key}</span>
           </div>
           <div class="doctor-time">
-            <span>⏰ ${doc.schedule}</span>
+            <span>📅 الأيام: ${doc.working_days || "غير محدد"}</span>
+            <br>
+            <span>⏰ المواعيد: ${doc.schedule_time || "حسب الحجز"}</span>
           </div>
         `;
         doctorsList.appendChild(docCard);
