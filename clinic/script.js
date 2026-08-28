@@ -90,6 +90,18 @@ async function fetchDoctorsData() {
 }
 fetchDoctorsData();
 
+// دالة لتنظيف وتوحيد النصوص العربية (تتجاهل الفروق بين أ/إ/ا و ة/ه والمسافات)
+function normalizeArabic(text) {
+  if (!text) return "";
+  return text
+    .toString()
+    .trim()
+    .replace(/[أإآ]/g, "ا")
+    .replace(/ة/g, "ه")
+    .replace(/\s+/g, " ")
+    .toLowerCase();
+}
+
 // دالة لمعرفة اسم اليوم العربي من تاريخ التقويم بدقة
 function getArabicDayName(dateString) {
   const parts = dateString.split("-");
@@ -98,7 +110,7 @@ function getArabicDayName(dateString) {
   return days[dateObj.getDay()];
 }
 
-// 3. فلترة وتحديث قائمة الأطباء المتاحين
+// 3. فلترة وتحديث قائمة الأطباء المتاحين بذكاء
 function updateAvailableDoctors() {
   const selectedDate = bookingDateInput.value;
   const selectedClinic = clinicSelect.value;
@@ -108,12 +120,31 @@ function updateAvailableDoctors() {
     return;
   }
 
-  const dayName = getArabicDayName(selectedDate);
+  if (allDoctorsData.length === 0) {
+    doctorGroup.style.display = "block";
+    doctorStatusNote.style.color = "#0369a1";
+    doctorStatusNote.textContent = "⏳ جاري فحص جدول الأطباء...";
+    return;
+  }
 
-  // فلترة الأطباء حسب التخصص ويوم العمل
+  const dayName = getArabicDayName(selectedDate);
+  const normalizedDay = normalizeArabic(dayName);
+  const selectedClinicArabic = normalizeArabic(CLINIC_LABELS[selectedClinic] || selectedClinic);
+  const selectedClinicKey = normalizeArabic(selectedClinic);
+
+  // فلترة الأطباء مع مطابقة مرنة تشمل التخصص (عربي/إنجليزي) وأيام العمل
   const available = allDoctorsData.filter((doc) => {
-    const matchClinic = (doc.clinic_key === selectedClinic || CLINIC_LABELS[doc.clinic_key] === CLINIC_LABELS[selectedClinic]);
-    const matchDay = doc.working_days && doc.working_days.includes(dayName);
+    const docClinicNormalized = normalizeArabic(doc.clinic_key);
+    const matchClinic = (
+      docClinicNormalized === selectedClinicKey ||
+      docClinicNormalized === selectedClinicArabic ||
+      docClinicNormalized.includes(selectedClinicKey) ||
+      selectedClinicArabic.includes(docClinicNormalized)
+    );
+
+    const docDaysNormalized = normalizeArabic(doc.working_days);
+    const matchDay = docDaysNormalized.includes(normalizedDay);
+
     return matchClinic && matchDay;
   });
 
