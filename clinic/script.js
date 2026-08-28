@@ -33,8 +33,6 @@ const doctorSelect = document.getElementById("doctor_name");
 const doctorStatusNote = document.getElementById("doctorStatusNote");
 const serviceTypeGroup = document.getElementById("serviceTypeGroup");
 const serviceTypeSelect = document.getElementById("service_type");
-const dentalRoomGroup = document.getElementById("dentalRoomGroup");
-const dentalRoomSelect = document.getElementById("dental_room");
 const specialNotesGroup = document.getElementById("specialNotesGroup");
 const specialAlertText = document.getElementById("specialAlertText");
 const submitBtn = document.getElementById("submitBtn");
@@ -90,7 +88,7 @@ async function fetchDoctorsData() {
 }
 fetchDoctorsData();
 
-// دالة لتنظيف وتوحيد النصوص العربية (تتجاهل الفروق بين أ/إ/ا و ة/ه والمسافات)
+// دالة لتنظيف وتوحيد النصوص العربية
 function normalizeArabic(text) {
   if (!text) return "";
   return text
@@ -102,7 +100,7 @@ function normalizeArabic(text) {
     .toLowerCase();
 }
 
-// دالة لمعرفة اسم اليوم العربي من تاريخ التقويم بدقة
+// دالة لمعرفة اسم اليوم العربي بدقة
 function getArabicDayName(dateString) {
   const parts = dateString.split("-");
   const dateObj = new Date(parts[0], parts[1] - 1, parts[2]);
@@ -132,7 +130,6 @@ function updateAvailableDoctors() {
   const selectedClinicArabic = normalizeArabic(CLINIC_LABELS[selectedClinic] || selectedClinic);
   const selectedClinicKey = normalizeArabic(selectedClinic);
 
-  // فلترة الأطباء مع مطابقة مرنة تشمل التخصص (عربي/إنجليزي) وأيام العمل
   const available = allDoctorsData.filter((doc) => {
     const docClinicNormalized = normalizeArabic(doc.clinic_key);
     const matchClinic = (
@@ -172,20 +169,12 @@ function updateAvailableDoctors() {
   }
 }
 
-// 4. تحديث قائمة الخدمات وغرف الأسنان بناءً على التخصص
+// 4. تحديث قائمة الخدمات بناءً على التخصص
 clinicSelect.addEventListener("change", (e) => {
   const selectedClinic = e.target.value;
   serviceTypeSelect.innerHTML = "";
   serviceTypeGroup.style.display = "block";
 
-  // إظهار/إخفاء غرفة الأسنان
-  if (selectedClinic === "dental") {
-    dentalRoomGroup.style.display = "block";
-  } else {
-    dentalRoomGroup.style.display = "none";
-  }
-
-  // توزيع الخدمات المتاحة
   let services = [];
 
   if (selectedClinic === "psychiatry") {
@@ -211,7 +200,6 @@ clinicSelect.addEventListener("change", (e) => {
       { value: "followup", label: "متابعة" }
     ];
   } else {
-    // باقي التخصصات العامة + النسا
     services = [
       { value: "checkup", label: "كشف" },
       { value: "consultation", label: "استشارة" }
@@ -253,7 +241,6 @@ bookingForm.addEventListener("submit", async (e) => {
   const clinicKeyInput = clinicSelect.value;
   const doctorNameInput = doctorSelect.value;
   const serviceTypeInput = serviceTypeSelect.value;
-  const dentalRoomInput = (clinicKeyInput === "dental") ? dentalRoomSelect.value : "";
   const notesInput = document.getElementById("notes") ? document.getElementById("notes").value.trim() : "";
 
   if (nameInput.length < 3) {
@@ -288,6 +275,13 @@ bookingForm.addEventListener("submit", async (e) => {
     return;
   }
 
+  // استخراج غرفة الأسنان تلقائياً بناءً على الطبيب المختار
+  let autoDentalRoom = "";
+  if (clinicKeyInput === "dental") {
+    const selectedDocObj = allDoctorsData.find((d) => d.doctor_name === doctorNameInput);
+    autoDentalRoom = (selectedDocObj && selectedDocObj.room) ? selectedDocObj.room : "room_1";
+  }
+
   submitBtn.disabled = true;
   loader.style.display = "block";
   responseMessage.style.display = "none";
@@ -300,7 +294,7 @@ bookingForm.addEventListener("submit", async (e) => {
     clinic_key: clinicKeyInput,
     doctor_name: doctorNameInput,
     service_type: serviceTypeInput,
-    dental_room: dentalRoomInput,
+    dental_room: autoDentalRoom,
     notes: notesInput
   };
 
@@ -348,7 +342,6 @@ bookingForm.addEventListener("submit", async (e) => {
       bookingDateInput.value = today;
       doctorGroup.style.display = "none";
       serviceTypeGroup.style.display = "none";
-      dentalRoomGroup.style.display = "none";
       specialNotesGroup.style.display = "none";
     } else {
       showError(result.message || "تعذر إتمام الحجز، يرجى المحاولة لاحقاً.");
@@ -398,6 +391,7 @@ openScheduleBtn.addEventListener("click", async () => {
             <span>📅 الأيام: ${doc.working_days || "غير محدد"}</span>
             <br>
             <span>⏰ المواعيد: ${doc.schedule_time || "حسب الحجز"}</span>
+            ${doc.room ? `<br><span>🚪 الغرفة: ${doc.room === "room_1" ? "غرفة 1" : (doc.room === "room_2" ? "غرفة 2" : doc.room)}</span>` : ""}
           </div>
         `;
         doctorsList.appendChild(docCard);
