@@ -31,6 +31,8 @@ const clinicSelect = document.getElementById("clinic_key");
 const doctorGroup = document.getElementById("doctorGroup");
 const doctorSelect = document.getElementById("doctor_name");
 const doctorStatusNote = document.getElementById("doctorStatusNote");
+const autoRoomDisplayGroup = document.getElementById("autoRoomDisplayGroup");
+const autoRoomDisplay = document.getElementById("autoRoomDisplay");
 const serviceTypeGroup = document.getElementById("serviceTypeGroup");
 const serviceTypeSelect = document.getElementById("service_type");
 const specialNotesGroup = document.getElementById("specialNotesGroup");
@@ -102,7 +104,7 @@ function normalizeArabic(text) {
     .replace(/\s+/g, " ");
 }
 
-// دالة حساب اليوم العربي بدون أي مشاكل في التوقيت والـ Timezone
+// دالة حساب اليوم العربي بالتوقيت المحلي
 function getArabicDayName(dateString) {
   if (!dateString) return "";
   const parts = dateString.split("-");
@@ -115,6 +117,25 @@ function getArabicDayName(dateString) {
   return days[localDate.getDay()];
 }
 
+// تحديث عرض الغرفة التلقائي للمريض
+function updateAutoRoomDisplay() {
+  const selectedClinic = clinicSelect.value;
+  const selectedDoctor = doctorSelect.value;
+
+  if (selectedClinic === "dental" && selectedDoctor) {
+    const docObj = allDoctorsData.find((d) => d.doctor_name === selectedDoctor);
+    if (docObj && docObj.room) {
+      const roomName = docObj.room === "room_1" ? "غرفة (1)" : (docObj.room === "room_2" ? "غرفة (2)" : docObj.room);
+      autoRoomDisplay.value = roomName;
+      autoRoomDisplayGroup.style.display = "block";
+      return;
+    }
+  }
+  autoRoomDisplayGroup.style.display = "none";
+}
+
+doctorSelect.addEventListener("change", updateAutoRoomDisplay);
+
 // 3. فلترة وتحديث قائمة الأطباء المتاحين بذكاء
 function updateAvailableDoctors() {
   const selectedDate = bookingDateInput.value;
@@ -122,6 +143,7 @@ function updateAvailableDoctors() {
 
   if (!selectedDate || !selectedClinic) {
     doctorGroup.style.display = "none";
+    autoRoomDisplayGroup.style.display = "none";
     return;
   }
 
@@ -137,7 +159,6 @@ function updateAvailableDoctors() {
   const clinicArabic = normalizeArabic(CLINIC_LABELS[selectedClinic] || "");
   const clinicKey = normalizeArabic(selectedClinic);
 
-  // فلترة الأطباء
   const available = allDoctorsData.filter((doc) => {
     const docClinic = normalizeArabic(doc.clinic_key);
     const docDays = normalizeArabic(doc.working_days);
@@ -167,6 +188,8 @@ function updateAvailableDoctors() {
       opt.textContent = `${doc.doctor_name} ${doc.schedule_time ? `(${doc.schedule_time})` : ""}`;
       doctorSelect.appendChild(opt);
     });
+
+    updateAutoRoomDisplay();
   } else {
     doctorGroup.style.display = "block";
     const opt = document.createElement("option");
@@ -175,6 +198,7 @@ function updateAvailableDoctors() {
     doctorSelect.appendChild(opt);
     doctorStatusNote.style.color = "#dc2626";
     doctorStatusNote.textContent = "يرجى اختيار يوم آخر يتوافق مع جدول مواعيد العيادة.";
+    autoRoomDisplayGroup.style.display = "none";
   }
 }
 
@@ -284,7 +308,7 @@ bookingForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  // استخراج غرفة الأسنان تلقائياً بناءً على الطبيب المختار
+  // استخراج غرفة الأسنان تلقائياً
   let autoDentalRoom = "";
   if (clinicKeyInput === "dental") {
     const selectedDocObj = allDoctorsData.find((d) => d.doctor_name === doctorNameInput);
@@ -350,6 +374,7 @@ bookingForm.addEventListener("submit", async (e) => {
       bookingForm.reset();
       bookingDateInput.value = localDateString;
       doctorGroup.style.display = "none";
+      autoRoomDisplayGroup.style.display = "none";
       serviceTypeGroup.style.display = "none";
       specialNotesGroup.style.display = "none";
     } else {
