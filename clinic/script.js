@@ -122,16 +122,21 @@ function updateAutoRoomDisplay() {
   const selectedClinic = clinicSelect.value;
   const selectedDoctor = doctorSelect.value;
 
-  if (selectedClinic === "dental" && selectedDoctor) {
-    const docObj = allDoctorsData.find((d) => d.doctor_name === selectedDoctor);
-    if (docObj && docObj.room) {
-      const roomName = docObj.room === "room_1" ? "غرفة (1)" : (docObj.room === "room_2" ? "غرفة (2)" : docObj.room);
-      autoRoomDisplay.value = roomName;
-      autoRoomDisplayGroup.style.display = "block";
-      return;
+  if (selectedClinic === "dental") {
+    let roomVal = "غرفة (1)"; // القيمة الافتراضية
+
+    if (selectedDoctor && allDoctorsData.length > 0) {
+      const docObj = allDoctorsData.find((d) => d.doctor_name === selectedDoctor);
+      if (docObj && docObj.room) {
+        roomVal = docObj.room === "room_2" || docObj.room === "غرفة 2" ? "غرفة (2)" : "غرفة (1)";
+      }
     }
+
+    autoRoomDisplay.value = roomVal;
+    autoRoomDisplayGroup.style.display = "block";
+  } else {
+    autoRoomDisplayGroup.style.display = "none";
   }
-  autoRoomDisplayGroup.style.display = "none";
 }
 
 doctorSelect.addEventListener("change", updateAutoRoomDisplay);
@@ -248,6 +253,7 @@ clinicSelect.addEventListener("change", (e) => {
 
   checkSpecialPolicies();
   updateAvailableDoctors();
+  updateAutoRoomDisplay();
 });
 
 bookingDateInput.addEventListener("change", updateAvailableDoctors);
