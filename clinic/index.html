@@ -5,6 +5,8 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>عيادات ومعامل لميس الفاروق</title>
   <link rel="stylesheet" href="style.css">
+  <!-- مكتبة تحويل التذكرة لصورة بجودة عالية -->
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
 
@@ -135,7 +137,7 @@
 
   <!-- نافذة كارت الحجز المنبثقة (Popup Modal) -->
   <div id="bookingModal" class="modal-overlay" style="display: none;">
-    <div class="modal-card">
+    <div class="modal-card" id="printableTicket">
       <div class="modal-header">
         <div class="modal-icon">✅</div>
         <h3>تم تسجيل الحجز بنجاح</h3>
@@ -173,8 +175,13 @@
           <strong id="modalAge">-</strong>
         </div>
         <div class="ticket-row">
-          <span>رقم الهاتف:</span>
+          <span>هاتف المريض:</span>
           <strong id="modalPhone" dir="ltr">-</strong>
+        </div>
+        <!-- سطر رقم هاتف العيادة للاستفسار -->
+        <div class="ticket-row">
+          <span>هاتف العيادة للاستفسار:</span>
+          <strong id="modalClinicPhone" style="color: #0284c7; font-weight: bold;" dir="ltr">-</strong>
         </div>
         <div class="ticket-row" id="modalQueueRow" style="display: none;">
           <span>رقم الدور:</span>
@@ -182,8 +189,9 @@
         </div>
       </div>
 
-      <div class="modal-footer">
-        <button type="button" id="closeModalBtn" class="btn-close-modal">حفظ وإغلاق</button>
+      <div class="modal-footer" id="modalFooterSection" style="display: flex; gap: 8px; flex-direction: column;">
+        <button type="button" id="downloadTicketBtn" class="btn-close-modal" style="background-color: #16a34a;">📸 حفظ التذكرة كصورة</button>
+        <button type="button" id="closeModalBtn" class="btn-close-modal" style="background-color: #64748b;">إغلاق</button>
       </div>
     </div>
   </div>
