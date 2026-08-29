@@ -152,7 +152,7 @@ function updateAutoRoomDisplay() {
   const selectedDoctor = doctorSelect.value;
 
   if (selectedClinic === "dental") {
-    let roomVal = "غرفة (1)"; // القيمة الافتراضية
+    let roomVal = "غرفة (1)";
 
     if (selectedDoctor && allDoctorsData.length > 0) {
       const docObj = allDoctorsData.find((d) => d.doctor_name === selectedDoctor);
@@ -343,14 +343,12 @@ bookingForm.addEventListener("submit", async (e) => {
     return;
   }
 
-  // استخراج غرفة الأسنان تلقائياً
   let autoDentalRoom = "";
   if (clinicKeyInput === "dental") {
     const selectedDocObj = allDoctorsData.find((d) => d.doctor_name === doctorNameInput);
     autoDentalRoom = (selectedDocObj && selectedDocObj.room) ? selectedDocObj.room : "room_1";
   }
 
-  // تحديد رقم هاتف العيادة المناسب قبل إعادة ضبط الحقول
   const assignedPhone = CLINIC_PHONES[clinicKeyInput] || "01155298538";
 
   submitBtn.disabled = true;
@@ -387,7 +385,6 @@ bookingForm.addEventListener("submit", async (e) => {
       modalService.textContent = SERVICE_LABELS[payload.service_type] || payload.service_type;
       modalMainMessage.textContent = result.message;
 
-      // تثبيت رقم هاتف العيادة داخل التذكرة
       const clinicPhoneEl = document.getElementById("modalClinicPhone");
       if (clinicPhoneEl) {
         clinicPhoneEl.textContent = assignedPhone;
@@ -438,36 +435,68 @@ function showError(msg) {
   responseMessage.innerHTML = `❌ ${msg}`;
 }
 
-// 6. زر حفظ التذكرة كصورة للمريض بدقة فائقة ووضوح عالي
+// 6. زر حفظ التذكرة كصورة للمريض بحدة فائقة وتباين كامل (بدون أي بهتان)
 if (downloadTicketBtn) {
   downloadTicketBtn.addEventListener("click", () => {
-    // إخفاء الأزرار مؤقتاً حتى لا تظهر داخل الصورة المحفوظة
     if (modalFooterSection) modalFooterSection.style.display = "none";
 
-    html2canvas(printableTicket, {
-      scale: 3, // دقة فائقة (3x) لمنع البهتان والبكسلة
+    const ticket = printableTicket;
+    const originalMaxHeight = ticket.style.maxHeight;
+    const originalOverflow = ticket.style.overflow;
+
+    ticket.style.maxHeight = "none";
+    ticket.style.overflow = "visible";
+
+    html2canvas(ticket, {
+      scale: 3,
       backgroundColor: "#ffffff",
       useCORS: true,
       logging: false,
-      allowTaint: true,
+      scrollY: -window.scrollY,
+      scrollX: -window.scrollX,
       onclone: (clonedDoc) => {
         const clonedTicket = clonedDoc.getElementById("printableTicket");
         if (clonedTicket) {
-          clonedTicket.style.backgroundColor = "#ffffff";
-          clonedTicket.style.boxShadow = "none";
+          clonedTicket.style.animation = "none";
+          clonedTicket.style.opacity = "1";
           clonedTicket.style.transform = "none";
-          clonedTicket.style.webkitFontSmoothing = "antialiased";
+          clonedTicket.style.boxShadow = "none";
+          clonedTicket.style.backgroundColor = "#ffffff";
+          clonedTicket.style.maxHeight = "none";
+          clonedTicket.style.overflow = "visible";
+
+          // فرض ألوان داكنة صريحة لمنع بهتان النصوص في الكانفاس
+          const allElements = clonedTicket.querySelectorAll("*");
+          allElements.forEach((el) => {
+            el.style.opacity = "1";
+            el.style.textShadow = "none";
+            el.style.webkitFontSmoothing = "antialiased";
+          });
+
+          const labels = clonedTicket.querySelectorAll(".ticket-row span");
+          labels.forEach((s) => s.style.color = "#1e293b");
+
+          const values = clonedTicket.querySelectorAll(".ticket-row strong");
+          values.forEach((v) => {
+            if (!v.classList.contains("queue-badge") && v.id !== "modalClinicPhone") {
+              v.style.color = "#000000";
+            }
+          });
         }
       }
     }).then((canvas) => {
-      if (modalFooterSection) modalFooterSection.style.display = "flex"; // إعادة إظهار الأزرار
-      
+      ticket.style.maxHeight = originalMaxHeight;
+      ticket.style.overflow = originalOverflow;
+      if (modalFooterSection) modalFooterSection.style.display = "flex";
+
       const link = document.createElement("a");
       const safePatientName = modalName.textContent.replace(/\s+/g, "_");
       link.download = `تذكرة_حجز_${safePatientName}.png`;
       link.href = canvas.toDataURL("image/png", 1.0);
       link.click();
     }).catch((err) => {
+      ticket.style.maxHeight = originalMaxHeight;
+      ticket.style.overflow = originalOverflow;
       if (modalFooterSection) modalFooterSection.style.display = "flex";
       alert("تعذر حفظ الصورة تلقائياً، يمكنك أخذ لقطة شاشة (Screenshot).");
     });
