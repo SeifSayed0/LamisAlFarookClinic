@@ -9,7 +9,8 @@ const CLINIC_LABELS = {
   ophthalmology: "رمد",
   physiotherapy: "علاج طبيعي",
   neurology: "مخ وأعصاب",
-  vascular: "جراحة وأوعية دموية",
+  surgery: "جراحة عامة",
+  vascular: "أوعية دموية",
   dermatology: "جلدية",
   ent: "أنف وأذن",
   speech_therapy: "تخاطب",
@@ -24,25 +25,26 @@ const SERVICE_LABELS = {
   followup: "متابعة"
 };
 
-// خريطة أرقام هواتف العيادات الدقيقة
+// خريطة أرقام هواتف العيادات بعد التبديل
 const CLINIC_PHONES = {
-  // المجموعة 1 (01141891350)
-  dental: "01141891350",
-  dermatology: "01141891350",
-  speech_therapy: "01141891350",
+  // المجموعة 1: أسنان - جلدية - تخاطب (01069604039)
+  dental: "01069604039",
+  dermatology: "01069604039",
+  speech_therapy: "01069604039",
   
-  // المجموعة 2 (0106904039)
-  internal: "0106904039",
-  physiotherapy: "0106904039",
+  // المجموعة 2: باطنة - علاج طبيعي - معمل (01141891350)
+  internal: "01141891350",
+  physiotherapy: "01141891350",
   
-  // المجموعة 3 (01155298538)
+  // المجموعة 3: رمد - عظام - أطفال - جراحة - أوعية دموية - مخ وأعصاب (01155298538)
   ophthalmology: "01155298538",
   orthopedic: "01155298538",
   pediatric: "01155298538",
+  surgery: "01155298538",
   vascular: "01155298538",
   neurology: "01155298538",
   
-  // المجموعة 4 (01030719551)
+  // المجموعة 4: أنف وأذن - نفسية - تغذية - نسا (01030719551)
   ent: "01030719551",
   psychiatry: "01030719551",
   nutrition: "01030719551",
@@ -74,6 +76,7 @@ const printableTicket = document.getElementById("printableTicket");
 const modalFooterSection = document.getElementById("modalFooterSection");
 const modalName = document.getElementById("modalName");
 const modalDate = document.getElementById("modalDate");
+const modalTime = document.getElementById("modalTime");
 const modalClinic = document.getElementById("modalClinic");
 const modalDoctorRow = document.getElementById("modalDoctorRow");
 const modalDoctor = document.getElementById("modalDoctor");
@@ -94,7 +97,6 @@ const closeScheduleBtn = document.getElementById("closeScheduleBtn");
 const scheduleLoader = document.getElementById("scheduleLoader");
 const doctorsList = document.getElementById("doctorsList");
 
-// مصفوفة لتخزين بيانات الأطباء من شيت Doctors
 let allDoctorsData = [];
 
 // 1. ضبط الحد الأدنى للتقويم من تاريخ اليوم بالتوقيت المحلي
@@ -120,7 +122,6 @@ async function fetchDoctorsData() {
 }
 fetchDoctorsData();
 
-// دالة تنظيف وتوحيد النصوص العربية والإنجليزية
 function normalizeArabic(text) {
   if (!text) return "";
   return text
@@ -133,7 +134,6 @@ function normalizeArabic(text) {
     .replace(/\s+/g, " ");
 }
 
-// دالة حساب اليوم العربي بالتوقيت المحلي
 function getArabicDayName(dateString) {
   if (!dateString) return "";
   const parts = dateString.split("-");
@@ -146,7 +146,6 @@ function getArabicDayName(dateString) {
   return days[localDate.getDay()];
 }
 
-// تحديث عرض الغرفة التلقائي للمريض
 function updateAutoRoomDisplay() {
   const selectedClinic = clinicSelect.value;
   const selectedDoctor = doctorSelect.value;
@@ -379,6 +378,17 @@ bookingForm.addEventListener("submit", async (e) => {
     if (result.success) {
       modalName.textContent = payload.patient_name;
       modalDate.textContent = payload.booking_date;
+
+      // حساب وعرض وقت التسجيل اللحظي (الساعة والدقيقة)
+      const currentBookingTime = new Date().toLocaleTimeString('ar-EG', {
+        hour: '2-digit',
+        minute: '2-digit',
+        hour12: true
+      });
+      if (modalTime) {
+        modalTime.textContent = currentBookingTime;
+      }
+
       modalAge.textContent = `${payload.age} سنة`;
       modalPhone.textContent = payload.phone;
       modalClinic.textContent = CLINIC_LABELS[payload.clinic_key] || payload.clinic_key;
@@ -435,7 +445,7 @@ function showError(msg) {
   responseMessage.innerHTML = `❌ ${msg}`;
 }
 
-// 6. زر حفظ التذكرة كصورة للمريض بحدة فائقة وتباين كامل (بدون أي بهتان)
+// 6. زر حفظ التذكرة كصورة للمريض بدقة وتباين عاليين
 if (downloadTicketBtn) {
   downloadTicketBtn.addEventListener("click", () => {
     if (modalFooterSection) modalFooterSection.style.display = "none";
@@ -465,7 +475,6 @@ if (downloadTicketBtn) {
           clonedTicket.style.maxHeight = "none";
           clonedTicket.style.overflow = "visible";
 
-          // فرض ألوان داكنة صريحة لمنع بهتان النصوص في الكانفاس
           const allElements = clonedTicket.querySelectorAll("*");
           allElements.forEach((el) => {
             el.style.opacity = "1";
@@ -503,11 +512,9 @@ if (downloadTicketBtn) {
   });
 }
 
-// التحكم بالنوافذ المنبثقة
 closeModalBtn.addEventListener("click", () => { bookingModal.style.display = "none"; });
 bookingModal.addEventListener("click", (e) => { if (e.target === bookingModal) bookingModal.style.display = "none"; });
 
-// جدول مواعيد الأطباء
 openScheduleBtn.addEventListener("click", async () => {
   scheduleModal.style.display = "flex";
   scheduleLoader.style.display = "block";
