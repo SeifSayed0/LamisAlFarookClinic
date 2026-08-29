@@ -5,7 +5,6 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>عيادات ومعامل لميس الفاروق</title>
   <link rel="stylesheet" href="style.css">
-  <!-- مكتبة تحويل التذكرة لصورة بجودة عالية -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
 </head>
 <body>
@@ -22,16 +21,16 @@
         <div class="contact-cards-grid">
           <div class="contact-card">
             <span class="card-title">أسنان - جلدية - تخاطب</span>
-            <a href="tel:01141891350" class="card-phone-btn">📞 01141891350</a>
+            <a href="tel:01069604039" class="card-phone-btn">📞 01069604039</a>
           </div>
 
           <div class="contact-card">
             <span class="card-title">باطنة - علاج طبيعي - معمل</span>
-            <a href="tel:0106904039" class="card-phone-btn">📞 0106904039</a>
+            <a href="tel:01141891350" class="card-phone-btn">📞 01141891350</a>
           </div>
 
           <div class="contact-card">
-            <span class="card-title">رمد - عظام - أطفال - جراحة وأوعية - مخ وأعصاب</span>
+            <span class="card-title">رمد - عظام - أطفال - جراحة - أوعية دموية - مخ وأعصاب</span>
             <a href="tel:01155298538" class="card-phone-btn">📞 01155298538</a>
           </div>
 
@@ -45,7 +44,6 @@
     </div>
   </header>
 
-  <!-- زر مواعيد الأطباء العائم -->
   <button type="button" id="openScheduleBtn" class="floating-schedule-btn">
     👨‍⚕️ مواعيد الأطباء
   </button>
@@ -67,7 +65,8 @@
             <option value="ophthalmology">رمد</option>
             <option value="physiotherapy">علاج طبيعي</option>
             <option value="neurology">مخ وأعصاب</option>
-            <option value="vascular">جراحة وأوعية دموية</option>
+            <option value="surgery">جراحة عامة</option>
+            <option value="vascular">أوعية دموية</option>
             <option value="dermatology">جلدية</option>
             <option value="ent">أنف وأذن</option>
             <option value="speech_therapy">تخاطب</option>
@@ -81,26 +80,21 @@
           <input type="date" id="booking_date" required>
         </div>
 
-        <!-- حقل اختيار الطبيب المعالج المتاح -->
         <div class="form-group" id="doctorGroup" style="display: none;">
           <label for="doctor_name">الطبيب المعالج المتاح</label>
           <select id="doctor_name" required>
-            <!-- تعبئة ديناميكية -->
           </select>
           <small id="doctorStatusNote" style="color: #0369a1; font-size: 13px; margin-top: 5px; display: block; font-weight: 500;"></small>
         </div>
 
-        <!-- حقل عرض الغرفة المخصصة تلقائياً (للقراءة فقط) -->
         <div class="form-group" id="autoRoomDisplayGroup" style="display: none;">
           <label>العيادة / الغرفة المخصصة</label>
           <input type="text" id="autoRoomDisplay" readonly style="background-color: #f1f5f9; font-weight: bold; color: #0284c7; cursor: not-allowed;">
         </div>
 
-        <!-- حقل نوع الخدمة الديناميكي -->
         <div class="form-group" id="serviceTypeGroup" style="display: none;">
           <label for="service_type">نوع الخدمة المطلوبة</label>
           <select id="service_type" required>
-            <!-- تعبئة ديناميكية -->
           </select>
         </div>
 
@@ -135,7 +129,6 @@
     </div>
   </main>
 
-  <!-- نافذة كارت الحجز المنبثقة (Popup Modal) -->
   <div id="bookingModal" class="modal-overlay" style="display: none;">
     <div class="modal-card" id="printableTicket">
       <div class="modal-header">
@@ -153,6 +146,11 @@
         <div class="ticket-row">
           <span>تاريخ الموعد:</span>
           <strong id="modalDate">-</strong>
+        </div>
+        <!-- خانة وقت التسجيل (الساعة والدقيقة) -->
+        <div class="ticket-row">
+          <span>وقت التسجيل:</span>
+          <strong id="modalTime">-</strong>
         </div>
         <div class="ticket-row">
           <span>التخصص:</span>
@@ -178,7 +176,6 @@
           <span>هاتف المريض:</span>
           <strong id="modalPhone" dir="ltr">-</strong>
         </div>
-        <!-- سطر رقم هاتف العيادة للاستفسار -->
         <div class="ticket-row">
           <span>هاتف العيادة للاستفسار:</span>
           <strong id="modalClinicPhone" style="color: #0284c7; font-weight: bold;" dir="ltr">-</strong>
@@ -196,7 +193,6 @@
     </div>
   </div>
 
-  <!-- نافذة جدول المواعيد -->
   <div id="scheduleModal" class="modal-overlay" style="display: none;">
     <div class="modal-card schedule-card">
       <div class="modal-header">
