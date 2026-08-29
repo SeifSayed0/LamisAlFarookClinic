@@ -24,6 +24,31 @@ const SERVICE_LABELS = {
   followup: "متابعة"
 };
 
+// خريطة أرقام هواتف العيادات الدقيقة
+const CLINIC_PHONES = {
+  // المجموعة 1 (01141891350)
+  dental: "01141891350",
+  dermatology: "01141891350",
+  speech_therapy: "01141891350",
+  
+  // المجموعة 2 (0106904039)
+  internal: "0106904039",
+  physiotherapy: "0106904039",
+  
+  // المجموعة 3 (01155298538)
+  ophthalmology: "01155298538",
+  orthopedic: "01155298538",
+  pediatric: "01155298538",
+  vascular: "01155298538",
+  neurology: "01155298538",
+  
+  // المجموعة 4 (01030719551)
+  ent: "01030719551",
+  psychiatry: "01030719551",
+  nutrition: "01030719551",
+  gynecology: "01030719551"
+};
+
 // عناصر النموذج
 const bookingForm = document.getElementById("bookingForm");
 const bookingDateInput = document.getElementById("booking_date");
@@ -41,9 +66,12 @@ const submitBtn = document.getElementById("submitBtn");
 const loader = document.getElementById("loader");
 const responseMessage = document.getElementById("responseMessage");
 
-// عناصر كارت المودال
+// عناصر كارت المودال والتذكرة
 const bookingModal = document.getElementById("bookingModal");
 const closeModalBtn = document.getElementById("closeModalBtn");
+const downloadTicketBtn = document.getElementById("downloadTicketBtn");
+const printableTicket = document.getElementById("printableTicket");
+const modalFooterSection = document.getElementById("modalFooterSection");
 const modalName = document.getElementById("modalName");
 const modalDate = document.getElementById("modalDate");
 const modalClinic = document.getElementById("modalClinic");
@@ -54,6 +82,7 @@ const modalRoomRow = document.getElementById("modalRoomRow");
 const modalRoom = document.getElementById("modalRoom");
 const modalAge = document.getElementById("modalAge");
 const modalPhone = document.getElementById("modalPhone");
+const modalClinicPhone = document.getElementById("modalClinicPhone");
 const modalMainMessage = document.getElementById("modalMainMessage");
 const modalQueueRow = document.getElementById("modalQueueRow");
 const modalQueueNumber = document.getElementById("modalQueueNumber");
@@ -355,6 +384,12 @@ bookingForm.addEventListener("submit", async (e) => {
       modalService.textContent = SERVICE_LABELS[payload.service_type] || payload.service_type;
       modalMainMessage.textContent = result.message;
 
+      // رقم هاتف العيادة المخصص للاستفسار
+      const assignedPhone = CLINIC_PHONES[payload.clinic_key] || "01155298538";
+      if (modalClinicPhone) {
+        modalClinicPhone.textContent = assignedPhone;
+      }
+
       if (payload.doctor_name) {
         modalDoctorRow.style.display = "flex";
         modalDoctor.textContent = payload.doctor_name;
@@ -398,6 +433,31 @@ function showError(msg) {
   responseMessage.style.display = "block";
   responseMessage.className = "response-card error";
   responseMessage.innerHTML = `❌ ${msg}`;
+}
+
+// 6. زر حفظ التذكرة كصورة للمريض
+if (downloadTicketBtn) {
+  downloadTicketBtn.addEventListener("click", () => {
+    // إخفاء الأزرار مؤقتاً حتى لا تظهر داخل الصورة المحفوظة
+    if (modalFooterSection) modalFooterSection.style.display = "none";
+
+    html2canvas(printableTicket, {
+      scale: 2, // دقة وجودة عالية
+      backgroundColor: "#ffffff",
+      useCORS: true
+    }).then((canvas) => {
+      if (modalFooterSection) modalFooterSection.style.display = "flex"; // إعادة إظهار الأزرار
+      
+      const link = document.createElement("a");
+      const safePatientName = modalName.textContent.replace(/\s+/g, "_");
+      link.download = `تذكرة_حجز_${safePatientName}.png`;
+      link.href = canvas.toDataURL("image/png");
+      link.click();
+    }).catch((err) => {
+      if (modalFooterSection) modalFooterSection.style.display = "flex";
+      alert("تعذر حفظ الصورة تلقائياً، يمكنك أخذ لقطة شاشة (Screenshot).");
+    });
+  });
 }
 
 // التحكم بالنوافذ المنبثقة
