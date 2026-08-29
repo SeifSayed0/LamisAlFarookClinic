@@ -438,23 +438,34 @@ function showError(msg) {
   responseMessage.innerHTML = `❌ ${msg}`;
 }
 
-// 6. زر حفظ التذكرة كصورة للمريض
+// 6. زر حفظ التذكرة كصورة للمريض بدقة فائقة ووضوح عالي
 if (downloadTicketBtn) {
   downloadTicketBtn.addEventListener("click", () => {
     // إخفاء الأزرار مؤقتاً حتى لا تظهر داخل الصورة المحفوظة
     if (modalFooterSection) modalFooterSection.style.display = "none";
 
     html2canvas(printableTicket, {
-      scale: 2, // دقة وجودة عالية
+      scale: 3, // دقة فائقة (3x) لمنع البهتان والبكسلة
       backgroundColor: "#ffffff",
-      useCORS: true
+      useCORS: true,
+      logging: false,
+      allowTaint: true,
+      onclone: (clonedDoc) => {
+        const clonedTicket = clonedDoc.getElementById("printableTicket");
+        if (clonedTicket) {
+          clonedTicket.style.backgroundColor = "#ffffff";
+          clonedTicket.style.boxShadow = "none";
+          clonedTicket.style.transform = "none";
+          clonedTicket.style.webkitFontSmoothing = "antialiased";
+        }
+      }
     }).then((canvas) => {
       if (modalFooterSection) modalFooterSection.style.display = "flex"; // إعادة إظهار الأزرار
       
       const link = document.createElement("a");
       const safePatientName = modalName.textContent.replace(/\s+/g, "_");
       link.download = `تذكرة_حجز_${safePatientName}.png`;
-      link.href = canvas.toDataURL("image/png");
+      link.href = canvas.toDataURL("image/png", 1.0);
       link.click();
     }).catch((err) => {
       if (modalFooterSection) modalFooterSection.style.display = "flex";
