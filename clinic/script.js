@@ -350,6 +350,9 @@ bookingForm.addEventListener("submit", async (e) => {
     autoDentalRoom = (selectedDocObj && selectedDocObj.room) ? selectedDocObj.room : "room_1";
   }
 
+  // تحديد رقم هاتف العيادة المناسب قبل إعادة ضبط الحقول
+  const assignedPhone = CLINIC_PHONES[clinicKeyInput] || "01155298538";
+
   submitBtn.disabled = true;
   loader.style.display = "block";
   responseMessage.style.display = "none";
@@ -384,10 +387,10 @@ bookingForm.addEventListener("submit", async (e) => {
       modalService.textContent = SERVICE_LABELS[payload.service_type] || payload.service_type;
       modalMainMessage.textContent = result.message;
 
-      // رقم هاتف العيادة المخصص للاستفسار
-      const assignedPhone = CLINIC_PHONES[payload.clinic_key] || "01155298538";
-      if (modalClinicPhone) {
-        modalClinicPhone.textContent = assignedPhone;
+      // تثبيت رقم هاتف العيادة داخل التذكرة
+      const clinicPhoneEl = document.getElementById("modalClinicPhone");
+      if (clinicPhoneEl) {
+        clinicPhoneEl.textContent = assignedPhone;
       }
 
       if (payload.doctor_name) {
