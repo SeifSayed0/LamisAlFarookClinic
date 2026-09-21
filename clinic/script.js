@@ -1,4 +1,4 @@
-const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbw_ohcEeCWrLng7OCllyPK0h8rFA5pzfHoudgi6yeV_3ml3gWWqAwHCslynql4SwMGE6w/exec";
+const SCRIPT_URL = "https://script.google.com/macros/s/AKfycbysEy4UnlBf1i02CM_OpyclwU8de9K0A9uRWKVMuH0CSLvik37qIylqArmdaxnfkKYHhg/exec";
 
 const CLINIC_LABELS = {
   dental: "أسنان",
